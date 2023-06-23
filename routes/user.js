@@ -9,16 +9,41 @@ const UserController = require("../controllers/user");
 //auth.verify ensures that a user is logged in before proceeding to the next part of the code
 router.get("/details", auth.verify, (req, res) => {
   const user = auth.decode(req.headers.authorization);
+  const queryParams = req.query;
   //the result is the data from auth.js (id, email, isAdmin)
 
   //we use the id of the user from the token to search for the user's information
-  UserController.get({ userId: user.id }).then((user) => res.send(user));
+  UserController.get({ userId: user.id, queryParams }).then((user) =>
+    res.send(user)
+  );
+});
+
+/**
+ * update user name
+ */
+router.put("/update-record", auth.verify, (req, res) => {
+  const user = auth.decode(req.headers.authorization);
+  UserController.updateUserName({ userId: user.id, data: req.body }).then(
+    (updatedRecord) => {
+      res.send(updatedRecord);
+    }
+  );
+});
+
+/**
+ * delete record
+ */
+router.delete("/DeleteRecords", auth.verify, (req, res) => {
+  UserController.archive(req.body).then((resultFromArchive) =>
+    res.send(resultFromArchive)
+  );
 });
 
 //test
 router.get("/test", (req, res) => {
   res.send("test");
 });
+
 //getRecords
 router.get("/GetRecords", auth.verify, (req, res) => {
   const user = auth.decode(req.headers.authorization);
@@ -58,12 +83,7 @@ router.post("/updateExpences", auth.verify, (req, res) => {
     res.send(resultFromUpdate)
   );
 });
-//archive (delete) a course
-router.delete("/DeleteRecords", auth.verify, (req, res) => {
-  UserController.archive(req.body).then((resultFromArchive) =>
-    res.send(resultFromArchive)
-  );
-});
+
 //change password
 router.post("/changePass", auth.verify, (req, res) => {
   UserController.changePassword(req.body).then((resultFromRegister) =>

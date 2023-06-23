@@ -111,6 +111,59 @@ module.exports.archive = async (params) => {
 };
 
 /**
+ * Update user name
+ * @param {*} params
+ * @returns
+ */
+module.exports.updateUserName = async ({ userId, data }) => {
+  try {
+    const user = await User.findById(userId);
+    if (user !== null) {
+      user.fullName = data.newUserName;
+      await user.save();
+      return { status: true, message: "User name successfully updated", user };
+    } else {
+      return { status: false, message: "User not found" };
+    }
+  } catch (error) {
+    return {
+      status: false,
+      message: error,
+    };
+  }
+};
+
+/**
+ * Retrieve user data with optional query parameters
+ * @param {Object} options - The options object
+ * @param {string} options.userId - The user ID
+ * @param {Object} options.queryParams - The query parameters
+ * @param {string} options.queryParams.category - The category name
+ * @returns {Promise} A promise that resolves to the user data
+ */
+module.exports.get = ({ userId, queryParams }) => {
+  const query = User.findById(userId).select("-password");
+
+  if (queryParams && queryParams.category) {
+    query.populate({
+      path: "transactions",
+      match: { categoryName: queryParams.category },
+    });
+  }
+
+  return query.exec().then((resultFromFindById) => {
+    if (queryParams && queryParams.category) {
+      resultFromFindById.transactions = resultFromFindById.transactions.filter(
+        (transaction) => transaction.categoryName === queryParams.category
+      );
+    } else {
+      resultFromFindById.transactions = resultFromFindById.transactions;
+    }
+    return resultFromFindById;
+  });
+};
+
+/**
  * update a transaction
  * @param {*} params
  * @returns
@@ -164,16 +217,7 @@ module.exports.getAllActive = (params) => {
   });
 };
 
-module.exports.get = (params) => {
-  return User.findById(params.userId)
-    .select("-password") // Exclude the password field
-    .then((resultFromFindById) => {
-      return resultFromFindById;
-    });
-};
-
 module.exports.addExpenses = (params) => {
-  console.log(params);
   return User.updateOne(
     { _id: params.userId },
     { $set: { balance: params.balanceAfterTransaction } }
