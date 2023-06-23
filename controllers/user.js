@@ -12,16 +12,127 @@ const clientId =
 const errCatcher = (err) => console.log(err);
 
 // adding transaction
-module.exports.addTransaction = (params) => {
-  return User.findById(params.userId).then((resultFromFindById) => {
-    if (resultFromFindById !== null) {
-      resultFromFindById.transactions.push(params.transaction);
-      return resultFromFindById.save().then((updatedUser, err) => {
-        return err ? false : true;
-      });
+// Adding a transaction
+module.exports.addTransaction = async (params) => {
+  try {
+    const user = await User.findById(params.userId);
+    if (user !== null) {
+      // get the incomes
+      const transactionIncome = user.transactions.filter(
+        (transaction) => transaction.type === "Income"
+      );
+
+      //get the expenses
+      const transactionExpenses = user.transactions.filter(
+        (transaction) => transaction.type === "Expenses"
+      );
+
+      // get the total Income
+      const balance = transactionIncome.reduce((acc, trans) => {
+        return acc + trans.amount;
+      }, 0);
+
+      // get the total Income
+      const expenses = transactionExpenses.reduce((acc, trans) => {
+        return acc + trans.amount;
+      }, 0);
+
+      // check if the category is already exist
+      if (!user.categories.includes(params.transaction.categoryName)) {
+        user.categories.push(params.transaction.categoryName);
+      }
+
+      // less the expenses in balance
+      const totalBalance = parseFloat(balance) - parseFloat(expenses);
+
+      if (params.transaction.type === "Income") {
+        user.balance = totalBalance + parseFloat(params.transaction.amount); // Set the balance property of the user
+      } else {
+        user.balance = totalBalance - parseFloat(params.transaction.amount); // Set the balance property of the user
+      }
+
+      user.transactions.push(params.transaction);
+      await user.save();
+      return { status: true, message: "Transaction added successfully", user };
     } else {
+      return { status: false, message: "User not found" };
     }
-  });
+  } catch (error) {
+    return {
+      status: false,
+      message: error,
+    };
+  }
+};
+
+/**
+ * removing transactions
+ * @param {*} params
+ * @returns
+ */
+module.exports.archive = async (params) => {
+  try {
+    const user = await User.findOne({ "transactions._id": params.userId });
+    if (user) {
+      // get the transaction
+      const curTransactions = user.transactions.filter(
+        (transaction) => transaction._id == params.userId
+      );
+
+      // create new transaction
+      const newTransactions = user.transactions.filter(
+        (transaction) => transaction._id != params.userId
+      );
+
+      // get the total Income
+      const balance = user.balance;
+
+      if (curTransactions[0].type === "Income") {
+        user.balance = balance - parseFloat(curTransactions[0].amount); // Set the balance property of the user
+      } else {
+        user.balance = balance + parseFloat(curTransactions[0].amount); // Set the balance property of the user
+      }
+      user.transactions = newTransactions;
+
+      await user.save();
+      return {
+        status: true,
+        message: "Transaction deleted successfully",
+        user,
+      };
+    }
+    return false;
+  } catch (error) {
+    return {
+      status: false,
+      message: error,
+    };
+  }
+};
+
+/**
+ * update a transaction
+ * @param {*} params
+ * @returns
+ */
+module.exports.update = async (params) => {
+  try {
+    const user = await User.findOne({ "transactions._id": params.userId });
+    if (user) {
+      const transactionIndex = user.transactions.findIndex(
+        (transaction) => transaction._id.toString() === params.userId
+      );
+      if (transactionIndex !== -1) {
+        user.transactions[transactionIndex].isActive = false;
+        await user.save();
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 };
 
 // adding toDo
@@ -38,20 +149,10 @@ module.exports.addToDo = (params) => {
 };
 
 module.exports.addBalance = (params) => {
-  console.log(params);
+  // console.log(params);
   return User.updateOne(
     { _id: params.userId },
     { $set: { balance: params.balanceAfterTransaction } }
-  ).then((user, err) => {
-    return err ? false : true;
-  });
-};
-
-//archive a reacord - set isActive to false
-module.exports.archive = (params) => {
-  return User.updateOne(
-    { "transactions._id": params.userId },
-    { $set: { "transactions.$.isActive": false } }
   ).then((user, err) => {
     return err ? false : true;
   });
@@ -63,12 +164,12 @@ module.exports.getAllActive = (params) => {
   });
 };
 
-//get user profile
 module.exports.get = (params) => {
-  return User.findById(params.userId).then((resultFromFindById) => {
-    resultFromFindById._id;
-    return resultFromFindById;
-  });
+  return User.findById(params.userId)
+    .select("-password") // Exclude the password field
+    .then((resultFromFindById) => {
+      return resultFromFindById;
+    });
 };
 
 module.exports.addExpenses = (params) => {

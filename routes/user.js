@@ -1,5 +1,5 @@
 /** @format */
-
+// const User2 = require("../models/User");
 const express = require("express");
 const router = express.Router();
 const auth = require("../auth");
@@ -14,6 +14,8 @@ router.get("/details", auth.verify, (req, res) => {
   //we use the id of the user from the token to search for the user's information
   UserController.get({ userId: user.id }).then((user) => res.send(user));
 });
+
+//test
 router.get("/test", (req, res) => {
   res.send("test");
 });
@@ -69,7 +71,7 @@ router.post("/changePass", auth.verify, (req, res) => {
   );
 });
 //for recording user history
-router.post("/addTransaction", auth.verify, (req, res) => {
+router.post("/addTransaction", auth.verify, async (req, res) => {
   const params = {
     userId: auth.decode(req.headers.authorization).id,
     transaction: {
@@ -81,7 +83,10 @@ router.post("/addTransaction", auth.verify, (req, res) => {
       balanceAfterTransaction: req.body.balanceAfterTransaction,
     },
   };
-  UserController.addTransaction(params).then((result) => res.send(result));
+
+  UserController.addTransaction(params).then((result) => {
+    res.send(result);
+  });
 });
 
 router.post("/addTodo", auth.verify, (req, res) => {
