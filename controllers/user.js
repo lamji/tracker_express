@@ -32,7 +32,7 @@ module.exports.addTransaction = async (params) => {
         return acc + trans.amount;
       }, 0);
 
-      // get the total Income
+      // get the total expenses
       const expenses = transactionExpenses.reduce((acc, trans) => {
         return acc + trans.amount;
       }, 0);
@@ -46,9 +46,13 @@ module.exports.addTransaction = async (params) => {
       const totalBalance = parseFloat(balance) - parseFloat(expenses);
 
       if (params.transaction.type === "Income") {
-        user.balance = totalBalance + parseFloat(params.transaction.amount); // Set the balance property of the user
+        // Set the balance property of the user
+        user.balance = totalBalance + parseFloat(params.transaction.amount);
+        user.income = balance + parseFloat(params.transaction.amount);
       } else {
-        user.balance = totalBalance - parseFloat(params.transaction.amount); // Set the balance property of the user
+        // Set the balance property of the user
+        user.balance = totalBalance - parseFloat(params.transaction.amount);
+        user.expenses = expenses + parseFloat(params.transaction.amount);
       }
 
       user.transactions.push(params.transaction);
@@ -147,7 +151,10 @@ module.exports.get = ({ userId, queryParams }) => {
   if (queryParams && queryParams.category) {
     query.populate({
       path: "transactions",
-      match: { categoryName: queryParams.category },
+      match: {
+        categoryName: queryParams.category,
+        type: queryParams.type,
+      },
     });
   }
 
@@ -156,9 +163,14 @@ module.exports.get = ({ userId, queryParams }) => {
       resultFromFindById.transactions = resultFromFindById.transactions.filter(
         (transaction) => transaction.categoryName === queryParams.category
       );
-    } else {
-      resultFromFindById.transactions = resultFromFindById.transactions;
     }
+
+    if (queryParams && queryParams.type) {
+      resultFromFindById.transactions = resultFromFindById.transactions.filter(
+        (transaction) => transaction.type === queryParams.type
+      );
+    }
+
     return resultFromFindById;
   });
 };
