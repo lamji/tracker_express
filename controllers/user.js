@@ -75,6 +75,7 @@ module.exports.addTransaction = async (params) => {
  * @returns
  */
 module.exports.archive = async (params) => {
+  console.log("params", params);
   try {
     const user = await User.findOne({ "transactions._id": params.userId });
     if (user) {
@@ -88,13 +89,24 @@ module.exports.archive = async (params) => {
         (transaction) => transaction._id != params.userId
       );
 
+      //get the expenses
+      const transactionExpenses = user.transactions.filter(
+        (transaction) => transaction.type === "Expenses"
+      );
+      // get the total expenses
+      const expenses = transactionExpenses.reduce((acc, trans) => {
+        return acc + trans.amount;
+      }, 0);
+
       // get the total Income
       const balance = user.balance;
 
       if (curTransactions[0].type === "Income") {
         user.balance = balance - parseFloat(curTransactions[0].amount); // Set the balance property of the user
+        user.income = balance - parseFloat(curTransactions[0].amount);
       } else {
         user.balance = balance + parseFloat(curTransactions[0].amount); // Set the balance property of the user
+        user.expenses = expenses - parseFloat(curTransactions[0].amount);
       }
       user.transactions = newTransactions;
 
@@ -107,6 +119,7 @@ module.exports.archive = async (params) => {
     }
     return false;
   } catch (error) {
+    console.log(error);
     return {
       status: false,
       message: error,
