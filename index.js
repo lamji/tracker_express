@@ -4,7 +4,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const userRoutes = require("./routes/user");
+const userRoutes = require("./routes/newRoutes");
 
 //database connection
 mongoose.connection.once("open", () =>
@@ -37,6 +37,7 @@ app.options("*", cors());
 
 //add all the routes
 app.use("/api/users", userRoutes);
+app.use("/", userRoutes);
 
 //server listening
 app.listen(port, () => console.log(`Listening to port ${port}`));

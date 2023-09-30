@@ -75,7 +75,6 @@ module.exports.addTransaction = async (params) => {
  * @returns
  */
 module.exports.archive = async (params) => {
-  console.log("params", params);
   try {
     const user = await User.findOne({ "transactions._id": params.userId });
     if (user) {

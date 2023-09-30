@@ -34,7 +34,45 @@ const userSchema = new mongoose.Schema({
   income: {
     type: Number,
   },
-  categories: [],
+  savings: [
+    {
+      dateAdded: {
+        type: Date,
+        default: new Date(),
+      },
+      savingName: {
+        type: String,
+        required: [true, "Category name is required."],
+      },
+      totalSaved: {
+        type: Number,
+        default: 0,
+        required: [true, "Total budget is required."],
+      },
+    },
+  ],
+  categories: [
+    {
+      dateAdded: {
+        type: Date,
+        default: new Date(),
+      },
+      categoryName: {
+        type: String,
+        required: [true, "Category name is required."],
+      },
+      totalBudget: {
+        type: Number,
+        default: 0,
+        required: [true, "Total budget is required."],
+      },
+      totalSpend: {
+        type: Number,
+        default: 0,
+        required: [true, "Total budget is required."],
+      },
+    },
+  ],
   transactions: [
     {
       categoryName: {
@@ -56,7 +94,7 @@ const userSchema = new mongoose.Schema({
       },
       balanceAfterTransaction: {
         type: Number,
-        required: [true, "Balance is required."],
+        required: [false, "Balance is required."],
       },
       dateAdded: {
         type: Date,
