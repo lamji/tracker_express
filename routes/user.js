@@ -39,11 +39,6 @@ router.delete("/DeleteRecords", auth.verify, (req, res) => {
   );
 });
 
-//test
-router.get("/test", (req, res) => {
-  res.send("test");
-});
-
 //getRecords
 router.get("/GetRecords", auth.verify, (req, res) => {
   const user = auth.decode(req.headers.authorization);

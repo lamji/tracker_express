@@ -95,4 +95,9 @@ router.post("/addCategory", auth.verify, async (req, res) => {
   }
 });
 
+//test
+router.get("/test", (req, res) => {
+  res.json("test");
+});
+
 module.exports = router;
