@@ -21,7 +21,7 @@ mongoose.connect(
 
 //server setup
 const app = express();
-const port = 22;
+const port = 4000;
 //bodyparser middleware
 app.use(express.json()); //only looks at request where the Content-Type header is JSON
 app.use(express.urlencoded({ extended: true })); //allows POST requests to include nested objects
