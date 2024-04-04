@@ -5,6 +5,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const userRoutes = require("./routes/newRoutes");
+const iconRoutes = require("./routes/icons");
+const categoryRoutes = require("./routes/categories");
 
 //database connection
 mongoose.connection.once("open", () =>
@@ -37,6 +39,8 @@ app.options("*", cors());
 
 //add all the routes
 app.use("/api/users", userRoutes);
+app.use("/api/icons", iconRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/", userRoutes);
 
 //server listening

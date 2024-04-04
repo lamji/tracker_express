@@ -9,6 +9,7 @@ const UserController = require("../controllers/newController");
  * login routes
  */
 router.post("/login", async (req, res) => {
+  console.log(req.body);
   const { email, password } = req.body;
   const clientIp = req.ip;
 
@@ -26,7 +27,7 @@ router.post("/login", async (req, res) => {
       return res.status(resultFromLogin.status).json(resultFromLogin);
 
     // if no issue return the token
-    console.log(`Login successful for IP: ${clientIp}`);
+
     return res.status(201).json(resultFromLogin);
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });

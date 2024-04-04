@@ -11,29 +11,35 @@ const errCatcher = (err) => console.log(err);
 /**
  * Login controller
  */
-module.exports.login = (params) => {
-  //find a user with matching email
-  return User.findOne({ email: params.email }).then((user) => {
-    // Check the result from find
-    if (!user) return { status: 401, error: "Invalid Credentials" };
+module.exports.login = async (params) => {
+  try {
+    // Find a user with matching email
+    const user = await User.findOne({ email: params.email });
 
-    // If find, check if password matched
+    // Check if user exists
+    if (!user) {
+      return { status: 401, error: "Invalid Credentials" };
+    }
+
+    // Check if password matches
     const isPasswordMatched = bcrypt.compareSync(
       params.password,
       user.password
     );
 
-    // If matched, send the token
+    // If password matches, create and return the access token
     if (isPasswordMatched) {
       const accessToken = auth.createAccessToken(user.toObject());
-      return {
-        accessToken: accessToken,
-      };
-      // else send invalid credentials
+      return { accessToken };
     } else {
-      return { status: 401, error: "Invalid Credentials" };
+      // If password doesn't match, return error
+      return { status: 401, error: "Invalid Credentials hot" };
     }
-  });
+  } catch (error) {
+    // Handle any unexpected errors
+    console.error("Error during login:", error);
+    return { status: 500, error: "Internal Server Error" };
+  }
 };
 
 // Get all active transaction
