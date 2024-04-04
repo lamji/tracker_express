@@ -37,7 +37,7 @@ router.post("/login", async (req, res) => {
 /**
  * Get all records
  */
-router.get("/GetRecords", auth.verify, async (req, res) => {
+router.get("/get-records", auth.verify, async (req, res) => {
   // auth.verify will check if token is present in header
   const user = auth.decode(req.headers.authorization);
   const queryParams = req.query;
@@ -57,7 +57,7 @@ router.get("/GetRecords", auth.verify, async (req, res) => {
 /**
  * add transactions
  */
-router.post("/addTransaction", auth.verify, async (req, res) => {
+router.post("/add-transaction", auth.verify, async (req, res) => {
   const params = {
     userId: auth.decode(req.headers.authorization).id,
     transaction: {
